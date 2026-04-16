@@ -9,7 +9,10 @@ export const omdbApi = createApi({
         searchMovies: builder.query<any,string>({
             query: (searchTerm) => `?apikey=${API_KEY}&s=${searchTerm}`,
         }),
+        getMovieDetails: builder.query<any, string>({
+            query: (imdbID) => `?apikey=${API_KEY}&i=${imdbID}`,
+        })
     }),
 })
 
-export const { useSearchMoviesQuery } = omdbApi;
+export const { useSearchMoviesQuery, useGetMovieDetailsQuery } = omdbApi;
