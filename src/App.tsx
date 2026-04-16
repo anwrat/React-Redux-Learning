@@ -25,6 +25,7 @@ export default function Search() {
 
   return (
     <div>
+      <p className='font-bold text-2xl'>Movie Finder</p>
       <input
         type="text"
         placeholder="Search movies..."
