@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useSearchMoviesQuery } from './services/omdbApi'
+import { useSearchMoviesQuery, useGetMovieDetailsQuery } from './services/omdbApi'
 
 export default function Search() {
   const [query, setQuery] = useState('')
@@ -9,6 +9,11 @@ export default function Search() {
   const { data, isLoading } = useSearchMoviesQuery(debouncedQuery, {
     skip: debouncedQuery.length < 3,
   })
+
+  const { data: movieDetails, isLoading: isMovieDetailsLoading } = useGetMovieDetailsQuery(id, {
+    skip: !id,
+  })
+
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -33,6 +38,17 @@ export default function Search() {
           <p onClick = {() => setId(movie.imdbID)}>{movie.Title}</p>
         </div>
       ))}
+
+      {isMovieDetailsLoading && <p>Loading movie details</p>}
+
+      {movieDetails && (
+        <div>
+          <h2>{movieDetails.Title}</h2>
+          <p>{movieDetails.Year}</p>
+          <p>{movieDetails.Plot}</p>
+          <img src={movieDetails.Poster} alt={movieDetails.Title} />
+        </div>
+      )}
     </div>
   )
 }
