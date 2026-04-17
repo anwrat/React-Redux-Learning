@@ -1,18 +1,22 @@
 import { useEffect, useState } from 'react'
 import { useSearchMoviesQuery, useGetMovieDetailsQuery } from './services/omdbApi'
+import { useSelector, useDispatch } from 'react-redux'
+import { setSearchTerm, setTypeTerm } from './services/filterSlice'
+import type{ RootState } from './app/store'
 
 export default function Search() {
-  const [query, setQuery] = useState('')
   const [debouncedQuery, setDebouncedQuery] = useState('')
   const [id, setId] = useState('');
-  const [yearFilter, setYearFilter] = useState('');
-  const [typeFilter, setTypeFilter] = useState('');
+
+  const dispatch = useDispatch();
+  const searchTerm = useSelector((state: RootState) => state.searchFilter.searchTerm);
+  const typeTerm = useSelector((state: RootState) => state.searchFilter.typeTerm);
 
   const { filteredData, isLoading } = useSearchMoviesQuery(debouncedQuery, {
     skip: debouncedQuery.length < 3,
     selectFromResult: ({data, isLoading}) =>{
       const filteredData = data?.Search?.filter((movie: any) => {
-        const matchesType = typeFilter ? movie.Type === typeFilter : true;
+        const matchesType = typeTerm ? movie.Type === typeTerm : true;
         return matchesType;
       });
       return {
@@ -29,33 +33,34 @@ export default function Search() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedQuery(query)
+      setDebouncedQuery(searchTerm)
     }, 500)
 
     return () => clearTimeout(timer)
-  },[query])
+  },[searchTerm])
 
   return (
     <div>
       <p className='font-bold text-2xl'>Movie Finder</p>
       <input
+        value={searchTerm}
         type="text"
         placeholder="Search movies..."
-        onChange={(e) => setQuery(e.target.value)}
+        onChange={(e) => dispatch(setSearchTerm(e.target.value))}
       />
 
-      <select onChange={(e)=>setTypeFilter(e.target.value)}>
+      <select value={typeTerm} onChange={(e)=>dispatch(setTypeTerm(e.target.value))}>
         <option value = "">All</option>
         <option value = "movie">Movies</option>
         <option value = "series">Series</option>
-        <option value = "episodes">Episodes</option>
+        <option value = "episode">Episodes</option>
       </select>
 
 
 
       {isLoading && <p>Loading...</p>}
 
-      {query.length >= 3 && filteredData?.map((movie: any) => (
+      {debouncedQuery.length >= 3 && filteredData?.map((movie: any) => (
         <div key={movie.imdbID}>
           <p onClick = {() => setId(movie.imdbID)}>{movie.Title}</p>
         </div>
