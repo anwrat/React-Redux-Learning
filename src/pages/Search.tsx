@@ -14,6 +14,8 @@ export default function Search() {
   const dispatch = useDispatch();
   const searchTerm = useSelector((state: RootState) => state.searchFilter.searchTerm);
   const typeTerm = useSelector((state: RootState) => state.searchFilter.typeTerm);
+  const favourites = useSelector((state: RootState) => state.favourites.movies);
+  const isFavourite = (id: string) => favourites.some((movie) => movie.imdbID === id);
 
   const { filteredData, isLoading } = useSearchMoviesQuery(debouncedQuery, {
     skip: debouncedQuery.length < 3,
@@ -69,7 +71,7 @@ export default function Search() {
         {/* Filter */}
         <select
         value={typeTerm}
-        className="w-full p-3 border rounded-lg mb-4"
+        className="p-3 border rounded-lg mb-4"
         onChange={(e) => dispatch(setTypeTerm(e.target.value))}
         >
         <option value="">All</option>
@@ -87,10 +89,10 @@ export default function Search() {
             <div
                 key={movie.imdbID}
                 className="p-3 border rounded-lg hover:bg-gray-50 cursor-pointer flex items-center justify-between"
-                onClick={() => setId(movie.imdbID)}
             >
-                {movie.Title}
-                <Heart/>
+                <p onClick={() => setId(movie.imdbID)}>{movie.Title}</p>
+                <Heart className = {`cursor-pointer ${isFavourite(movie.imdbID) ? 'fill-red-500 text-red-500': 'text-gray-400'}`} 
+                    onClick = {() => dispatch(addFavourite(movie))}/>
             </div>
             ))}
         </div>
