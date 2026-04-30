@@ -70,6 +70,9 @@ export default function AddMovie(){
                         <option value = "series">Series</option>
                         <option value = "episode">Episode</option>
                     </select>
+                    {errors.Type && (
+                        <p className="text-red-500 text-sm">{errors.Type.message}</p>
+                    )}
                     <div>
                         <input className="w-full p-3 border rounded-lg" placeholder="Poster" {...register('Poster')}/>
                         {errors.Poster && (
@@ -82,13 +85,12 @@ export default function AddMovie(){
                         Submit
                     </button>
                 </form>
-            </div>
             {movies.length === 0 &&(
                 <p className="text-center text-gray-500">
                     No Custom Movies yet
                 </p>
             )}
-            <div className="space-y-3">
+            <div className="max-w-2xl space-y-3">
                 {movies.map((movie) => (
                 <div
                     key={movie.imdbID}
@@ -109,6 +111,7 @@ export default function AddMovie(){
                     </button>
                 </div>
                 ))}
+            </div>
             </div>
         </div>
     )
