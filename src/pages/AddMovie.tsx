@@ -1,19 +1,42 @@
 import { Link } from "react-router-dom"
-import { useForm } from "react-hook-form"
-import { useDispatch } from "react-redux"
+import { useEffect } from "react"
+import { useForm, useWatch } from "react-hook-form"
+import { useDispatch, useSelector } from "react-redux"
 import { zodResolver } from "@hookform/resolvers/zod"
 import {z} from "zod"
 import { MovieSchema } from "../schemas/movieSchema"
+import type { RootState } from "../app/store"
+import { setFieldValues } from "../services/defaultFormSlice"
+import { addMovie, removeMovie } from "../services/customMovieSlice"
 
 type FormData = z.infer<typeof MovieSchema>
 
 export default function AddMovie(){
-    const {register, handleSubmit, formState: {errors}} = useForm<FormData>({
-        resolver: zodResolver(MovieSchema)
+    const dispatch = useDispatch();
+    const movies = useSelector((state: RootState)=>state.customMovie.movies);
+    const defaultFields = useSelector((state: RootState)=> state.defaultForm);
+    const {register, handleSubmit,control, formState: {errors}} = useForm<FormData>({
+        mode:"onChange",
+        resolver: zodResolver(MovieSchema),
+        defaultValues:{
+            Title: defaultFields.Title,
+            Year: defaultFields.Year,
+            Type: defaultFields.Type as any,
+            Poster: defaultFields.Poster,
+        }
     });
 
+    const formValues = useWatch({control});
+
+    useEffect(()=>{
+        if(formValues.Title || formValues.Year){
+            dispatch(setFieldValues(formValues));
+        }
+    },[formValues, dispatch])
+
     const submitForm = (data: FormData) =>{
-        const newMovie = {...data, imdbID: crypto.randomUUID()}
+        const newMovie = {...data, imdbID: crypto.randomUUID()};
+        dispatch(addMovie(newMovie));
     }
 
     return(
@@ -53,8 +76,39 @@ export default function AddMovie(){
                             <p className="text-red-500 text-sm">{errors.Poster.message}</p>
                         )}
                     </div>
-                    <button className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">Submit</button>
+                    <button 
+                        className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"
+                    >
+                        Submit
+                    </button>
                 </form>
+            </div>
+            {movies.length === 0 &&(
+                <p className="text-center text-gray-500">
+                    No Custom Movies yet
+                </p>
+            )}
+            <div className="space-y-3">
+                {movies.map((movie) => (
+                <div
+                    key={movie.imdbID}
+                    className="flex justify-between items-center p-3 border rounded-lg"
+                >
+                    <div>
+                    <p className="font-semibold">{movie.Title}</p>
+                    <p className="text-sm text-gray-500">{movie.Year}</p>
+                    </div>
+    
+                    <button
+                    onClick={() =>
+                        dispatch(removeMovie(movie.imdbID))
+                    }
+                    className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600"
+                    >
+                    Remove
+                    </button>
+                </div>
+                ))}
             </div>
         </div>
     )
